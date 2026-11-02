@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moneka</title>
+<style>
+  :root { --bg:#F3F7F6; --card:#fff; --ink:#0E2A30; --muted:#5B6B6E; --accent:#0A7373; --err:#B42318; }
+  * { box-sizing:border-box }
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg); color:var(--ink);
+         font:16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding:16px }
+  main { width:100%; max-width:420px; background:var(--card); border-radius:20px; padding:28px 24px; box-shadow:0 6px 30px rgba(14,42,48,.08) }
+  .ic { font-size:52px; line-height:1 }
+  h1 { font-size:24px; margin:14px 0 8px }
+  p { color:var(--muted); margin:0 0 12px }
+  label { display:block; font-weight:600; margin:14px 0 6px }
+  input { width:100%; font:inherit; padding:12px 14px; border:1px solid #D5E0DE; border-radius:12px }
+  button { width:100%; margin-top:18px; font:inherit; font-weight:700; color:#fff; background:var(--accent); border:0; border-radius:14px; padding:14px; cursor:pointer }
+  .err { color:var(--err) } .en { font-size:14px; border-top:1px solid #E5ECEB; padding-top:12px; margin-top:16px }
+  [hidden] { display:none !important }
+</style>
+</head>
+<body>
+<main>
+  <!-- Compte confirmé -->
+  <section id="ok" hidden>
+    <div class="ic">✅</div>
+    <h1>Ton compte est confirmé</h1>
+    <p>Retourne dans l'appli Moneka et connecte-toi avec ton e-mail et ton mot de passe : <b>Plus › Réglages › Compte</b>.</p>
+    <p class="en">Your account is confirmed. Go back to the Moneka app and log in with your email and password.</p>
+  </section>
+  <!-- Nouveau mot de passe -->
+  <form id="reset" hidden>
+    <div class="ic">🔑</div>
+    <h1>Nouveau mot de passe</h1>
+    <p>Choisis un nouveau mot de passe pour ton compte Moneka (au moins 8 caractères).</p>
+    <label for="p1">Nouveau mot de passe</label><input id="p1" type="password" autocomplete="new-password" minlength="8" required>
+    <label for="p2">Répète le mot de passe</label><input id="p2" type="password" autocomplete="new-password" minlength="8" required>
+    <p id="rerr" class="err" hidden></p>
+    <button type="submit" id="rbtn">Enregistrer</button>
+  </form>
+  <section id="done" hidden>
+    <div class="ic">✅</div>
+    <h1>Mot de passe changé</h1>
+    <p>Retourne dans l'appli Moneka et connecte-toi avec ton nouveau mot de passe.</p>
+    <p class="en">Password changed. Go back to the Moneka app and log in with your new password.</p>
+  </section>
+  <!-- Lien expiré ou déjà utilisé -->
+  <section id="bad" hidden>
+    <div class="ic">⏳</div>
+    <h1>Ce lien ne marche plus</h1>
+    <p id="badmsg">Il a peut-être déjà été utilisé ou il a expiré. Si tu as déjà confirmé ton compte, connecte-toi simplement dans l'appli.</p>
+    <p class="en">This link has expired or was already used. If your account is already confirmed, just log in from the app.</p>
+  </section>
+</main>
+<script type="module">
+  // Clé publique (anon / publishable) : faite pour être dans une page web, comme dans l'appli.
+  const URL = "https://eafhyimtmsszrazruboe.supabase.co";
+  const KEY = "sb_publishable_Y1LGCHWrzTynNjTMyZOIKA_UjkQelH9";
+  const h = new URLSearchParams(location.hash.slice(1)), q = new URLSearchParams(location.search);
+  const show = id => document.getElementById(id).hidden = false;
+  const type = h.get("type") || q.get("type");
+  if (h.get("error") || q.get("error")) show("bad");
+  else if (type === "recovery" && h.get("access_token")) {
+    show("reset");
+    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm");
+    const sb = createClient(URL, KEY, { auth: { persistSession: false, detectSessionInUrl: false } });
+    await sb.auth.setSession({ access_token: h.get("access_token"), refresh_token: h.get("refresh_token") || "" });
+    history.replaceState(null, "", location.pathname);
+    document.getElementById("reset").addEventListener("submit", async e => {
+      e.preventDefault();
+      const p1 = document.getElementById("p1").value, p2 = document.getElementById("p2").value, err = document.getElementById("rerr");
+      const fail = m => { err.textContent = m; err.hidden = false; };
+      if (p1.length < 8) return fail("Le mot de passe doit contenir au moins 8 caractères.");
+      if (p1 !== p2) return fail("Les deux mots de passe ne sont pas identiques.");
+      const btn = document.getElementById("rbtn"); btn.disabled = true; btn.textContent = "Patiente…";
+      const { error } = await sb.auth.updateUser({ password: p1 });
+      if (error) { btn.disabled = false; btn.textContent = "Enregistrer"; return fail("Impossible de changer le mot de passe. Redemande un lien depuis l'appli."); }
+      document.getElementById("reset").hidden = true; show("done");
+    });
+  } else { history.replaceState(null, "", location.pathname); show("ok"); }
+</script>
+</body>
+</html>
