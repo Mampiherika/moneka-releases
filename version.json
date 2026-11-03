@@ -1,6 +1,6 @@
 {
-  "version": "1.3.8",
-  "code": 27,
-  "apk": "https://github.com/ILoveProblem-Projects/moneka-releases/releases/download/v1.3.8/moneka.apk",
-  "notes": "Photo de profil corrigée, connexion d'abord au démarrage, mot de passe oublié plus simple, confirmation avant de se déconnecter."
+  "version": "1.4.0",
+  "code": 32,
+  "apk": "https://github.com/ILoveProblem-Projects/moneka-releases/releases/download/v1.4.0/moneka.apk",
+  "notes": "Recettes illustrées, un seul bouton Partager, liste des courses repliée, connexion d'abord, et plusieurs corrections."
 }
