@@ -1,6 +1,6 @@
 {
-  "version": "1.4.0",
-  "code": 32,
-  "apk": "https://github.com/ILoveProblem-Projects/moneka-releases/releases/download/v1.4.0/moneka.apk",
-  "notes": "Recettes illustrées, un seul bouton Partager, liste des courses repliée, connexion d'abord, et plusieurs corrections."
+  "version": "1.4.3",
+  "code": 39,
+  "apk": "https://github.com/ILoveProblem-Projects/moneka-releases/releases/download/v1.4.3/moneka.apk",
+  "notes": "Page de téléchargement claire pour le lien de partage."
 }
